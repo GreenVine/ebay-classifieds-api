@@ -6,8 +6,8 @@ import (
     "time"
 )
 
-// RequestAPI will send request to ECG API endpoint
-func (agent Agent) RequestAPI(url string, timeout time.Duration) (string, []error) {
+// RequestEndpoint will send request to ECG API endpoint
+func (agent Agent) RequestEndpoint(url string, timeout time.Duration) (string, []error) {
     http := gorequest.
         New().
         Timeout(timeout * time.Millisecond)
@@ -18,8 +18,11 @@ func (agent Agent) RequestAPI(url string, timeout time.Duration) (string, []erro
 
     resp, body, errs := http.Get(agent.Endpoint + url).End()
 
-    if errs != nil || resp.StatusCode != 200 {
-        errs = append(errs, fmt.Errorf("unexpected HTTP status code %d received", resp.StatusCode))
+    if errs != nil {
+        if resp != nil && resp.StatusCode != 200 {
+            errs = append(errs, fmt.Errorf("erroneous HTTP status code %d received", resp.StatusCode))
+        }
+
         return "", errs
     }
 
