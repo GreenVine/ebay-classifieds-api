@@ -16,28 +16,29 @@ func ParseXML(rawXML string) (*etree.Document, error) {
     return doc, nil
 }
 
-// ExtractElementText is a safe wrapper of FindElement with Text() applied on the result
-func ExtractElementText(element *etree.Element, path string) (string, error) {
+// ExtractText is a safe wrapper of FindElement with Text() applied on the result
+func ExtractText(element *etree.Element, path string) (string, error) {
     if result := element.FindElement(path); result != nil {
         return result.Text(), nil
     }
 
-    return "", fmt.Errorf("element not found")
+    return "", fmt.Errorf("element invalid or does not exist")
 }
 
-// ExtractElementsText is a safe wrapper of FindElements with Text() applied on results
-func ExtractElementsText(element *etree.Element, path string) ([]string, error) {
-    var texts []string
+// ExtractTextAsUint wraps ExtractText and converts result to uint
+func ExtractTextAsUint(element *etree.Element, path string) (uint, error) {
+    return ConvString2Uint(ExtractText(element, path))
+}
 
-    if results := element.FindElements(path); results != nil {
-        for _, result := range results {
-            if result != nil {
-                texts = append(texts, result.Text())
-            }
-        }
+// ExtractTextAsFloat64 wraps ExtractText and converts result to uint
+func ExtractTextAsFloat64(element *etree.Element, path string) (float64, error) {
+    return ConvString2Float64(ExtractText(element, path))
+}
 
-        return texts, nil
+func ExtractAttrByTag(element *etree.Element, tag string) (string, error) {
+    if result := element.SelectAttr(tag); result != nil {
+        return result.Value, nil
     }
 
-    return texts, fmt.Errorf("element not found")
+    return "", fmt.Errorf("attribute invalid or does not exist")
 }

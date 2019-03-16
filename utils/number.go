@@ -15,13 +15,15 @@ func ConvString2Uint(text string, err1 error) (uint, error) {
     }
 }
 
-// ConvString2UintDefault is a wrapper to ConvString2Uint that returns fallback value if it fails
-func ConvString2UintDefault(text string, err1 error) func(fallback uint) uint {
-    return func(fallback uint) uint {
-        if parsedUint, err2 := ConvString2Uint(text, err1); err2 != nil {
-            return fallback
+// ConvString2Float64 is a wrapper to safely convert string to uint
+func ConvString2Float64(text string, err1 error) (float64, error) {
+    if err1 == nil {
+        if parsedFloat64, err2 := strconv.ParseFloat(text, 64); err2 != nil {
+            return 0, err2
         } else {
-            return parsedUint
+            return parsedFloat64, nil
         }
+    } else {
+        return 0, err1
     }
 }
