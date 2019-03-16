@@ -6,7 +6,7 @@ import "time"
 type Category struct {
     Adverts                 []NormalisedAdvert  `json:"ads"`
     MatchedEntries          uint                `json:"matched_entries"`
-    Pagination              Pagination          `json:"pagination"`
+    Pagination              *Pagination         `json:"pagination"`
 }
 
 // Pagination is the page control of the category
@@ -18,8 +18,8 @@ type Pagination struct {
 // NormalisedAdvert is the root element of an ad
 type NormalisedAdvert struct {
     ID                      uint                `json:"id"`
-    Type                    *string             `json:"type"`
-    Status                  *string             `json:"status"`
+    Type                    string              `json:"type"`
+    Status                  string              `json:"status"`
     Category                *AdvertCategory     `json:"category"`
     Position                *Position           `json:"positions"`
     PosterType              *string             `json:"poster_type"`
@@ -65,8 +65,8 @@ type Region struct {
 
 // Coordinate is the geographic coordinates of the location
 type Coordinate struct {
-    Longitude               float32             `json:"longitude"`
-    Latitude                float32             `json:"latitude"`
+    Longitude               float64             `json:"longitude"`
+    Latitude                float64             `json:"latitude"`
 }
 
 // AdvertCategory is the category of an ad (not to be confused with the root category)
@@ -75,7 +75,7 @@ type AdvertCategory struct {
     Name                    string              `json:"name"`
     Slug                    *string             `json:"slug"`
     ParentSlug              *string             `json:"parent_slug"`
-    ChildrenEntries         *uint               `json:"children_entries"`
+    ChildrenCount           *uint               `json:"children_count"`
 }
 
 // Attribute associated with each ad
