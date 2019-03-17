@@ -81,14 +81,33 @@ func buildAdvert(ads []*etree.Element, errors *[]error, hasCriticalError *bool) 
                     ExtractText(ad, "./ad:poster-type/ad:value"))(
                     "UNKNOWN", errors, fmt.Errorf("ads/ad/poster_type"))
 
+                advertTitle := FallbackStringWithReport(
+                    ExtractText(ad, "./ad:title"))(
+                    "", errors, fmt.Errorf("ads/ad/title"))
+
+                advertDescriptionExcerptHTML := FallbackStringWithReport(
+                    ExtractText(ad, "./ad:description"))(
+                    "", errors, fmt.Errorf("ads/ad/desc_excerpt_html"))
+
+                advertDescriptionExcerpt, err := FormatHtml2Base64(advertDescriptionExcerptHTML)
+                if err != nil {
+                    *errors = append(*errors, fmt.Errorf("ads/ad/desc_excerpt_plain_b64"))
+                }
+
+                advertPictures := buildPicture(ad, errors, hasCriticalError)
+
                 adverts = append(adverts, models.NormalisedAdvert{
-                    ID:         advertId,
-                    Type:       advertType,
-                    Status:     advertStatus,
-                    Category:   advertCategory,
-                    Position:   advertPosition,
-                    PosterType: &advertPosterType,
-                    Price:      advertPrice,
+                    ID:                     advertId,
+                    Type:                   advertType,
+                    Status:                 advertStatus,
+                    Category:               advertCategory,
+                    Position:               advertPosition,
+                    PosterType:             &advertPosterType,
+                    Price:                  advertPrice,
+                    Title:                  advertTitle,
+                    DescriptionExcerptB64:  &advertDescriptionExcerpt,
+                    DescriptionExcerptHTML: &advertDescriptionExcerptHTML,
+                    Pictures:               advertPictures,
                 })
             }
 
@@ -205,4 +224,42 @@ func buildPosition(ad *etree.Element, errors *[]error, _ *bool) *models.Position
         Coordinate: coordinate,
         State: &state,
     }
+}
+
+func buildPicture(ad *etree.Element, errors *[]error, _ *bool) []models.Picture {
+    var pictures []models.Picture
+
+    pics := ad.FindElements("./pic:pictures/pic:picture")
+
+    if pics != nil {
+        for i, pic := range pics {
+            if pic != nil {
+                thumbnail := FallbackStringWithReport(
+                    ExtractAttrByTag(pic.FindElement("./pic:link[@rel='thumbnail']"), "href"))(
+                    "", errors, fmt.Errorf("ads/ad/pictures[%d]/thumbnail", i))
+                normal := FallbackStringWithReport(
+                    ExtractAttrByTag(pic.FindElement("./pic:link[@rel='normal']"), "href"))(
+                    "", errors, fmt.Errorf("ads/ad/pictures[%d]/normal", i))
+                large := FallbackStringWithReport(
+                    ExtractAttrByTag(pic.FindElement("./pic:link[@rel='large']"), "href"))(
+                    "", errors, fmt.Errorf("ads/ad/pictures[%d]/large", i))
+                extraLarge := FallbackStringWithReport(
+                    ExtractAttrByTag(pic.FindElement("./pic:link[@rel='extraLarge']"), "href"))(
+                    "", errors, fmt.Errorf("ads/ad/pictures[%d]/extraLarge", i))
+                extraExtraLarge := FallbackStringWithReport(
+                    ExtractAttrByTag(pic.FindElement("./pic:link[@rel='extraExtraLarge']"), "href"))(
+                    "", errors, fmt.Errorf("ads/ad/pictures[%d]/extraExtraLarge", i))
+
+                pictures = append(pictures, models.Picture{
+                   Thumbnail:       &thumbnail,
+                   Normal:          &normal,
+                   Large:           &large,
+                   ExtraLarge:      &extraLarge,
+                   ExtraExtraLarge: &extraExtraLarge,
+                })
+            }
+        }
+    }
+
+    return pictures
 }

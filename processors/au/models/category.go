@@ -25,7 +25,7 @@ type NormalisedAdvert struct {
     PosterType              *string             `json:"poster_type"`
     Price                   *Price              `json:"price"`
     Title                   string              `json:"title"`
-    DescriptionExcerpt      *string             `json:"desc_excerpt"`
+    DescriptionExcerptB64   *string             `json:"desc_excerpt_plain_b64"`
     DescriptionExcerptHTML  *string             `json:"desc_excerpt_html"`
     Pictures                []Picture           `json:"pictures"`
     Attributes              []Attribute         `json:"attributes"`
