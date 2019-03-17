@@ -18,8 +18,10 @@ func ParseXML(rawXML string) (*etree.Document, error) {
 
 // ExtractText is a safe wrapper of FindElement with Text() applied on the result
 func ExtractText(element *etree.Element, path string) (string, error) {
-    if result := element.FindElement(path); result != nil {
-        return result.Text(), nil
+    if element != nil {
+        if result := element.FindElement(path); result != nil {
+            return result.Text(), nil
+        }
     }
 
     return "", fmt.Errorf("element invalid or does not exist")
@@ -36,8 +38,10 @@ func ExtractTextAsFloat64(element *etree.Element, path string) (float64, error) 
 }
 
 func ExtractAttrByTag(element *etree.Element, tag string) (string, error) {
-    if result := element.SelectAttr(tag); result != nil {
-        return result.Value, nil
+    if element != nil {
+        if result := element.SelectAttr(tag); result != nil {
+            return result.Value, nil
+        }
     }
 
     return "", fmt.Errorf("attribute invalid or does not exist")
