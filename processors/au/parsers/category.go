@@ -5,6 +5,7 @@ import (
     models "github.com/GreenVine/ebay-ecg-api/processors/au/models"
     . "github.com/GreenVine/ebay-ecg-api/utils"
     "github.com/beevik/etree"
+    "time"
 )
 
 // ParseCategory is to build a Category models from raw XML response
@@ -35,17 +36,11 @@ func buildCategory(root *etree.Element, errors *[]error, hasCriticalError *bool)
     // build each advertisement
     adverts := buildAdvert(root.SelectElements("ad"), errors, hasCriticalError)
 
-    // retrieve total matched entries
-    matchedEntries := FallbackUintWithReport(
-        ExtractTextAsUint(root, "./types:paging/types:numFound"))(
-        0, errors, fmt.Errorf("category/matched_entries"))
-
     // build pagination
-    pagination := buildPagination(root.SelectElement("ads-search-options"), errors, hasCriticalError)
+    pagination := buildPagination(root, errors, hasCriticalError)
 
     return models.Category{
         Adverts:        adverts,
-        MatchedEntries: matchedEntries,
         Pagination:     pagination,
     }
 }
@@ -79,7 +74,7 @@ func buildAdvert(ads []*etree.Element, errors *[]error, hasCriticalError *bool) 
 
                 advertPosterType := FallbackStringWithReport(
                     ExtractText(ad, "./ad:poster-type/ad:value"))(
-                    "UNKNOWN", errors, fmt.Errorf("ads/ad/poster_type"))
+                    "", errors, fmt.Errorf("ads/ad/poster_type"))
 
                 advertTitle := FallbackStringWithReport(
                     ExtractText(ad, "./ad:title"))(
@@ -96,18 +91,30 @@ func buildAdvert(ads []*etree.Element, errors *[]error, hasCriticalError *bool) 
 
                 advertPictures := buildPicture(ad, errors, hasCriticalError)
 
+                advertAttributes := buildAttribute(ad, errors, hasCriticalError)
+
+                advertCreationTime := buildTime(ad.FindElement("./ad:creation-date-time"), errors, hasCriticalError)
+
+                advertStartTime := buildTime(ad.FindElement("./ad:start-date-time"), errors, hasCriticalError)
+
+                advertEndTime := buildTime(ad.FindElement("./ad:end-date-time"), errors, hasCriticalError)
+
                 adverts = append(adverts, models.NormalisedAdvert{
                     ID:                     advertId,
                     Type:                   advertType,
                     Status:                 advertStatus,
                     Category:               advertCategory,
                     Position:               advertPosition,
-                    PosterType:             &advertPosterType,
+                    PosterType:             ReplaceStringWithNil(advertPosterType, ""),
                     Price:                  advertPrice,
-                    Title:                  advertTitle,
-                    DescriptionExcerptB64:  &advertDescriptionExcerpt,
-                    DescriptionExcerptHTML: &advertDescriptionExcerptHTML,
+                    Title:                  *ReplaceStringWithNil(advertTitle, ""),
+                    DescriptionExcerptB64:  ReplaceStringWithNil(advertDescriptionExcerpt, ""),
+                    DescriptionExcerptHTML: ReplaceStringWithNil(advertDescriptionExcerptHTML, ""),
                     Pictures:               advertPictures,
+                    Attributes:             advertAttributes,
+                    CreationTime:           advertCreationTime,
+                    StartTime:              advertStartTime,
+                    EndTime:                advertEndTime,
                 })
             }
 
@@ -130,15 +137,15 @@ func buildAdvertCategory(ad *etree.Element, errors *[]error, _ *bool) *models.Ad
 
     catName := FallbackStringWithReport(
         ExtractText(cat, "./cat:localized-name"))(
-        "UNKNOWN", errors, fmt.Errorf("ads/ad/category/name"))
+        "", errors, fmt.Errorf("ads/ad/category/name"))
 
     catSlug := FallbackStringWithReport(
         ExtractText(cat, "./cat:id-name"))(
-        "UNKNOWN", errors, fmt.Errorf("ads/ad/category/slug"))
+        "", errors, fmt.Errorf("ads/ad/category/slug"))
 
     catParentSlug := FallbackStringWithReport(
         ExtractText(cat, "./cat:l1-name"))(
-        "UNKNOWN", errors, fmt.Errorf("ads/ad/category/parent_slug"))
+        "", errors, fmt.Errorf("ads/ad/category/parent_slug"))
 
     catChildrenCount := FallbackUintWithReport(
         ExtractTextAsUint(cat, "./cat:children-count"))(
@@ -146,9 +153,9 @@ func buildAdvertCategory(ad *etree.Element, errors *[]error, _ *bool) *models.Ad
 
     return &models.AdvertCategory{
         ID:             catId,
-        Name:           catName,
-        Slug:           &catSlug,
-        ParentSlug:     &catParentSlug,
+        Name:           *ReplaceStringWithNil(catName, ""),
+        Slug:           ReplaceStringWithNil(catSlug, ""),
+        ParentSlug:     ReplaceStringWithNil(catParentSlug, ""),
         ChildrenCount:  &catChildrenCount,
     }
 }
@@ -179,23 +186,28 @@ func buildAdvertPrice(ad *etree.Element, errors *[]error, _ *bool) *models.Price
         Type: &priceType,
         Amount: &priceAmount,
         HighestAmount: &priceHighestAmount,
-        Currency: &currency,
-        CurrencySymbol: &currencySymbol,
+        Currency: ReplaceStringWithNil(currency, ""),
+        CurrencySymbol: ReplaceStringWithNil(currencySymbol, ""),
     }
 }
 
-func buildPagination(pagination *etree.Element, errors *[]error, _ *bool) *models.Pagination {
-    if pagination != nil {
+func buildPagination(root *etree.Element, errors *[]error, _ *bool) *models.Pagination {
+    if root != nil {
       currentPage := FallbackUintWithReport(
-          ExtractTextAsUint(pagination, "./ad:page"))(
-          0, errors, fmt.Errorf("category/pagination/current"))
+          ExtractTextAsUint(root, "./ad:ads-search-options/ad:page"))(
+          0, errors, fmt.Errorf("category/root/current"))
       pageSize :=  FallbackUintWithReport(
-          ExtractTextAsUint(pagination, "./ad:size"))(
-          0, errors, fmt.Errorf("category/pagination/size"))
+          ExtractTextAsUint(root, "./ad:ads-search-options/ad:size"))(
+          0, errors, fmt.Errorf("category/root/size"))
+        // retrieve total matched entries
+      matchedEntries := FallbackUintWithReport(
+          ExtractTextAsUint(root, "./types:paging/types:numFound"))(
+            0, errors, fmt.Errorf("category/matched_entries"))
 
       return &models.Pagination{
-          CurrentPage: currentPage,
-          PageSize: pageSize,
+          CurrentPage:      currentPage,
+          PageSize:         pageSize,
+          MatchedEntries:   matchedEntries,
       }
     }
 
@@ -218,20 +230,18 @@ func buildPosition(ad *etree.Element, errors *[]error, _ *bool) *models.Position
 
     state := FallbackStringWithReport(
         ExtractText(ad, "./ad:ad-address/types:state"))(
-        "UNKNOWN", errors, fmt.Errorf("ads/ad/positions/state"))
+        "", errors, fmt.Errorf("ads/ad/positions/state"))
 
     return &models.Position{
         Coordinate: coordinate,
-        State: &state,
+        State: ReplaceStringWithNil(state, ""),
     }
 }
 
 func buildPicture(ad *etree.Element, errors *[]error, _ *bool) []models.Picture {
     var pictures []models.Picture
 
-    pics := ad.FindElements("./pic:pictures/pic:picture")
-
-    if pics != nil {
+    if pics := ad.FindElements("./pic:pictures/pic:picture"); pics != nil {
         for i, pic := range pics {
             if pic != nil {
                 thumbnail := FallbackStringWithReport(
@@ -251,15 +261,64 @@ func buildPicture(ad *etree.Element, errors *[]error, _ *bool) []models.Picture 
                     "", errors, fmt.Errorf("ads/ad/pictures[%d]/extraExtraLarge", i))
 
                 pictures = append(pictures, models.Picture{
-                   Thumbnail:       &thumbnail,
-                   Normal:          &normal,
-                   Large:           &large,
-                   ExtraLarge:      &extraLarge,
-                   ExtraExtraLarge: &extraExtraLarge,
+                   Thumbnail:       ReplaceStringWithNil(thumbnail, ""),
+                   Normal:          ReplaceStringWithNil(normal, ""),
+                   Large:           ReplaceStringWithNil(large, ""),
+                   ExtraLarge:      ReplaceStringWithNil(extraLarge, ""),
+                   ExtraExtraLarge: ReplaceStringWithNil(extraExtraLarge, ""),
                 })
             }
         }
     }
 
     return pictures
+}
+
+func buildAttribute(ad *etree.Element, errors *[]error, _ *bool) []models.Attribute {
+    var attributes []models.Attribute
+
+    if attrs := ad.FindElements("./attr:attributes/attr:attribute"); attrs != nil {
+        for i, attr := range attrs {
+            if attr != nil {
+                keySlug := FallbackStringWithReport(
+                    ExtractAttrByTag(attr, "name"))(
+                    "", errors, fmt.Errorf("ads/ad/attributes[%d]/key_slug", i))
+                keyName := FallbackStringWithReport(
+                    ExtractAttrByTag(attr, "localized-label"))(
+                    "", errors, fmt.Errorf("ads/ad/attributes[%d]/key_name", i))
+                valueType := FallbackStringWithReport(
+                    ExtractAttrByTag(attr, "type"))(
+                    "", errors, fmt.Errorf("ads/ad/attributes[%d]/value_type", i))
+                valueSlug := FallbackStringWithReport(
+                    ExtractText(attr, "./attr:value"))(
+                    "", errors, fmt.Errorf("ads/ad/attributes[%d]/value_slug", i))
+                valueName := FallbackStringWithReport(
+                   ExtractAttrByTag(attr.FindElement("./attr:value"), "localized-label"))(
+                   "", errors, fmt.Errorf("ads/ad/attributes[%d]/value_name", i))
+
+                attributes = append(attributes, models.Attribute{
+                    KeySlug:    *ReplaceStringWithNil(keySlug, ""),
+                    KeyName:    *ReplaceStringWithNil(keyName, ""),
+                    ValueType:  ReplaceStringWithNil(valueType, ""),
+                    ValueSlug:  ReplaceStringWithNil(valueSlug, ""),
+                    ValueName:  ReplaceStringWithNil(valueName, ""),
+                })
+            }
+        }
+    }
+
+    return attributes
+}
+
+func buildTime(element *etree.Element, _ *[]error, _ *bool) *time.Time {
+    if element != nil {
+        timestr := element.Text()
+
+        if timeinst, err := time.Parse(time.RFC3339, timestr); err == nil {
+            timeinst = timeinst.UTC()
+            return &timeinst
+        }
+    }
+
+    return nil
 }

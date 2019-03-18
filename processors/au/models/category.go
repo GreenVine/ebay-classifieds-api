@@ -5,14 +5,14 @@ import "time"
 // Category is the root element of a category output
 type Category struct {
     Adverts                 []NormalisedAdvert  `json:"ads"`
-    MatchedEntries          uint                `json:"matched_entries"`
     Pagination              *Pagination         `json:"pagination"`
 }
 
 // Pagination is the page control of the category
 type Pagination struct {
     CurrentPage             uint                `json:"current"`
-    PageSize                uint                `json:"size"`
+    PageSize                uint                `json:"page_size"`
+    MatchedEntries          uint                `json:"entry_size"`
 }
 
 // NormalisedAdvert is the root element of an ad
@@ -29,9 +29,9 @@ type NormalisedAdvert struct {
     DescriptionExcerptHTML  *string             `json:"desc_excerpt_html"`
     Pictures                []Picture           `json:"pictures"`
     Attributes              []Attribute         `json:"attributes"`
-    CreationTime            time.Time           `json:"creation_time"`
-    StartTime               time.Time           `json:"start_time"`
-    EndTime                 time.Time           `json:"end_time"`
+    CreationTime            *time.Time          `json:"creation_time"`
+    StartTime               *time.Time          `json:"start_time"`
+    EndTime                 *time.Time          `json:"end_time"`
 }
 
 // Price is the listing price shown on an ad
@@ -81,7 +81,8 @@ type AdvertCategory struct {
 // Attribute associated with each ad
 type Attribute struct {
     KeySlug                 string              `json:"key_slug"`
-    KeyName                 *string             `json:"key_name"`
+    KeyName                 string              `json:"key_name"`
+    ValueType               *string             `json:"value_type"`
     ValueSlug               *string             `json:"value_slug"`
     ValueName               *string             `json:"value_name"`
 }
