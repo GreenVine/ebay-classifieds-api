@@ -1,7 +1,6 @@
 package ecg
 
 import (
-    "github.com/GreenVine/ebay-ecg-api/ecg"
     u "github.com/GreenVine/ebay-ecg-api/utils"
     "github.com/beevik/etree"
     "github.com/parnurzeal/gorequest"
@@ -28,6 +27,12 @@ type Authorization struct {
     Password string
 }
 
+// EndpointErrorResponse is model of erroneous endpoint response
+type EndpointErrorResponse struct {
+    StatusCode  *uint   `json:"code"`
+    Message     *string `json:"message"`
+}
+
 func (agent Agent) hasECGAuthorization() bool {
     return agent.ECGAuthorization != nil
 }
@@ -37,7 +42,7 @@ func (agent Agent) hasECGAuthentication() bool {
 }
 
 // RequestEndpoint will send request to ECG API endpoint
-func (agent Agent) RequestEndpoint(url string, timeout time.Duration) (*etree.Document, *ecg.EndpointErrorResponse) {
+func (agent Agent) RequestEndpoint(url string, timeout time.Duration) (*etree.Document, *EndpointErrorResponse) {
     http := gorequest.
         New().
         Timeout(timeout * time.Millisecond)
@@ -60,7 +65,7 @@ func (agent Agent) RequestEndpoint(url string, timeout time.Duration) (*etree.Do
                 extractedMsg, _ := u.ExtractText(root, "//message")
                 errMsg          := u.ReplaceStringWithNil(&extractedMsg, "")
 
-                return nil, &ecg.EndpointErrorResponse{
+                return nil, &EndpointErrorResponse{
                     StatusCode: &statusCode,
                     Message:    errMsg,
                 }
@@ -71,13 +76,13 @@ func (agent Agent) RequestEndpoint(url string, timeout time.Duration) (*etree.Do
 
         errMsg := "Internal server error"
 
-        return nil, &ecg.EndpointErrorResponse{ // failed to parse response
+        return nil, &EndpointErrorResponse{ // failed to parse response
             StatusCode: &statusCode,
             Message:    &errMsg,
         }
     }
 
-    return nil, &ecg.EndpointErrorResponse{
+    return nil, &EndpointErrorResponse{
         StatusCode: &statusCode,
         Message:    &errMsg,
     }
