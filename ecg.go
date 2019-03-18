@@ -1,15 +1,41 @@
 package ecg
 
 import (
-    "github.com/GreenVine/ebay-ecg-api/ecg/models"
+    "github.com/GreenVine/ebay-ecg-api/ecg"
     . "github.com/GreenVine/ebay-ecg-api/utils"
     "github.com/beevik/etree"
     "github.com/parnurzeal/gorequest"
     "time"
 )
 
+// Agent is ECG agent that stores configurable information
+type Agent struct {
+    Endpoint string
+    ECGAuthorization *Authorization
+    ECGAuthentication *Authentication
+}
+
+type Authentication struct {
+    AuthenticateUser string
+    AuthenticateAd string
+    AuthenticateDevice string
+}
+
+type Authorization struct {
+    Username string
+    Password string
+}
+
+func (agent Agent) hasECGAuthorization() bool {
+    return agent.ECGAuthorization != nil
+}
+
+func (agent Agent) hasECGAuthentication() bool {
+    return agent.ECGAuthentication != nil
+}
+
 // RequestEndpoint will send request to ECG API endpoint
-func (agent Agent) RequestEndpoint(url string, timeout time.Duration) (*etree.Document, *ecgmodels.EndpointErrorResponse) {
+func (agent Agent) RequestEndpoint(url string, timeout time.Duration) (*etree.Document, *ecg.EndpointErrorResponse) {
     http := gorequest.
         New().
         Timeout(timeout * time.Millisecond)
@@ -34,7 +60,7 @@ func (agent Agent) RequestEndpoint(url string, timeout time.Duration) (*etree.Do
                 extractedMsg, _ := ExtractText(root, "//message")
                 errMsg          := ReplaceStringWithNil(&extractedMsg, "")
 
-                return nil, &ecgmodels.EndpointErrorResponse{
+                return nil, &ecg.EndpointErrorResponse{
                     StatusCode: &statusCode,
                     Message:    errMsg,
                 }
@@ -42,13 +68,13 @@ func (agent Agent) RequestEndpoint(url string, timeout time.Duration) (*etree.Do
         } else {
             errMsg := "Internal server error"
 
-            return nil, &ecgmodels.EndpointErrorResponse{ // failed to parse response
+            return nil, &ecg.EndpointErrorResponse{ // failed to parse response
                 StatusCode: &statusCode,
                 Message:    &errMsg,
             }
         }
     } else {
-        return nil, &ecgmodels.EndpointErrorResponse{
+        return nil, &ecg.EndpointErrorResponse{
             StatusCode: &statusCode,
             Message:    &errMsg,
         }

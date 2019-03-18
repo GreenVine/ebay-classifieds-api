@@ -1,4 +1,4 @@
-package ecgmodels
+package ecg
 
 type EndpointErrorResponse struct {
     StatusCode  *uint   `json:"code"`
