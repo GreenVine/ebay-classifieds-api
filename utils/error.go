@@ -38,3 +38,11 @@ func FallbackStringWithReport(value string, err error) func(fallback string, err
         return value // return actual value as no error occurs
     }
 }
+
+func ReplaceStringWithNil(str string, match string) *string {
+    if str != match {
+        return &str
+    } else {
+        return nil
+    }
+}
