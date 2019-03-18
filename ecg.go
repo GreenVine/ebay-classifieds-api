@@ -2,7 +2,7 @@ package ecg
 
 import (
     "github.com/GreenVine/ebay-ecg-api/ecg"
-    . "github.com/GreenVine/ebay-ecg-api/utils"
+    u "github.com/GreenVine/ebay-ecg-api/utils"
     "github.com/beevik/etree"
     "github.com/parnurzeal/gorequest"
     "time"
@@ -15,12 +15,14 @@ type Agent struct {
     ECGAuthentication *Authentication
 }
 
+// Authentication is ECG authentication settings
 type Authentication struct {
     AuthenticateUser string
     AuthenticateAd string
     AuthenticateDevice string
 }
 
+// Authorization is ECG authorization settings
 type Authorization struct {
     Username string
     Password string
@@ -50,33 +52,33 @@ func (agent Agent) RequestEndpoint(url string, timeout time.Duration) (*etree.Do
     errMsg := "Service temporarily unavailable"
 
     if errs == nil && len(errs) < 1 && resp != nil && body != "" {
-        xml, err := ParseXML(body)
+        xml, err := u.ParseXML(body)
         statusCode = uint(resp.StatusCode)
 
         if err == nil { // XML is valid
-            if root := xml.Root(); statusCode == 200 && root != nil && root.Tag != "api-base-error" && root.Tag != "html" {
-                return xml, nil
-            } else {
-                extractedMsg, _ := ExtractText(root, "//message")
-                errMsg          := ReplaceStringWithNil(&extractedMsg, "")
+            if root := xml.Root(); statusCode != 200 || root == nil || root.Tag == "api-base-error" || root.Tag == "html" {
+                extractedMsg, _ := u.ExtractText(root, "//message")
+                errMsg          := u.ReplaceStringWithNil(&extractedMsg, "")
 
                 return nil, &ecg.EndpointErrorResponse{
                     StatusCode: &statusCode,
                     Message:    errMsg,
                 }
             }
-        } else {
-            errMsg := "Internal server error"
 
-            return nil, &ecg.EndpointErrorResponse{ // failed to parse response
-                StatusCode: &statusCode,
-                Message:    &errMsg,
-            }
+            return xml, nil
         }
-    } else {
-        return nil, &ecg.EndpointErrorResponse{
+
+        errMsg := "Internal server error"
+
+        return nil, &ecg.EndpointErrorResponse{ // failed to parse response
             StatusCode: &statusCode,
             Message:    &errMsg,
         }
+    }
+
+    return nil, &ecg.EndpointErrorResponse{
+        StatusCode: &statusCode,
+        Message:    &errMsg,
     }
 }

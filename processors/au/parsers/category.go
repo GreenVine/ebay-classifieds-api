@@ -2,13 +2,13 @@ package auparsers
 
 import (
     "fmt"
-    . "github.com/GreenVine/ebay-ecg-api/processors/au/models"
-    . "github.com/GreenVine/ebay-ecg-api/utils"
+    models "github.com/GreenVine/ebay-ecg-api/processors/au/models"
+    u "github.com/GreenVine/ebay-ecg-api/utils"
     "github.com/beevik/etree"
 )
 
 // ParseCategory is to build a Category models from raw XML response
-func ParseCategory(doc *etree.Document) (*Category, []error, bool) {
+func ParseCategory(doc *etree.Document) (*models.Category, []error, bool) {
     root := doc.Root()
 
     if root == nil || root.Space != "ad" || root.Tag != "ads" {
@@ -18,15 +18,15 @@ func ParseCategory(doc *etree.Document) (*Category, []error, bool) {
     var errors []error
     var hasCriticalError = false
 
-    if category := buildCategoryBase(root, &errors, &hasCriticalError); hasCriticalError {
-        return nil, errors, true
-    } else {
+    if category := buildCategoryBase(root, &errors, &hasCriticalError); !hasCriticalError {
         return &category, errors, false
     }
+
+    return nil, errors, true
 }
 
-func buildCategoryBase(root *etree.Element, errors *[]error, hasCriticalError *bool) Category {
-    var adverts []Advert
+func buildCategoryBase(root *etree.Element, errors *[]error, hasCriticalError *bool) models.Category {
+    var adverts []models.Advert
 
     for _, advert := range root.SelectElements("ad") { // build each advertisement
         if advert != nil {
@@ -45,26 +45,26 @@ func buildCategoryBase(root *etree.Element, errors *[]error, hasCriticalError *b
     // build pagination
     pagination := buildPagination(root, errors, hasCriticalError)
 
-    return Category{
+    return models.Category{
         Adverts:        adverts,
         Pagination:     pagination,
     }
 }
 
-func buildPagination(root *etree.Element, errors *[]error, _ *bool) *CategoryPagination {
+func buildPagination(root *etree.Element, errors *[]error, _ *bool) *models.CategoryPagination {
     if root != nil {
-      currentPage := FallbackUintWithReport(
-          ExtractTextAsUint(root, "./ad:ads-search-options/ad:page"))(
+      currentPage := u.FallbackUintWithReport(
+          u.ExtractTextAsUint(root, "./ad:ads-search-options/ad:page"))(
           0, errors, fmt.Errorf("category/root/current"))
-      pageSize :=  FallbackUintWithReport(
-          ExtractTextAsUint(root, "./ad:ads-search-options/ad:size"))(
+      pageSize :=  u.FallbackUintWithReport(
+          u.ExtractTextAsUint(root, "./ad:ads-search-options/ad:size"))(
           0, errors, fmt.Errorf("category/root/size"))
         // retrieve total matched entries
-      matchedEntries := FallbackUintWithReport(
-          ExtractTextAsUint(root, "./types:paging/types:numFound"))(
+      matchedEntries := u.FallbackUintWithReport(
+          u.ExtractTextAsUint(root, "./types:paging/types:numFound"))(
             0, errors, fmt.Errorf("category/matched_entries"))
 
-      return &CategoryPagination{
+      return &models.CategoryPagination{
           CurrentPage: currentPage,
           PageSize:    pageSize,
           EntrySize:   matchedEntries,

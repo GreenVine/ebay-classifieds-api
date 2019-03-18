@@ -39,18 +39,20 @@ func FallbackStringWithReport(value string, err error) func(fallback string, err
     }
 }
 
+// ReplaceStringWithNil replaces a matched string with nil
 func ReplaceStringWithNil(str *string, match string) *string {
     if str != nil && *str != match {
         return str
-    } else {
-        return nil
     }
+
+    return nil
 }
 
+// ReplaceUintWithNil replaces a matched unit with nil
 func ReplaceUintWithNil(number *uint, match uint) *uint {
     if number != nil && *number != match {
         return number
-    } else {
-        return nil
     }
+
+    return nil
 }

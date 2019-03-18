@@ -37,6 +37,7 @@ func ExtractTextAsFloat64(element *etree.Element, path string) (float64, error) 
     return ConvString2Float64(ExtractText(element, path))
 }
 
+// ExtractAttrByTag extracts a given tag from attributes
 func ExtractAttrByTag(element *etree.Element, tag string) (string, error) {
     if element != nil {
         if result := element.SelectAttr(tag); result != nil {

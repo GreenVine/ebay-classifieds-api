@@ -62,7 +62,7 @@ type AdvertCategory struct {
     ChildrenCount           *uint               `json:"children_count"`
 }
 
-// AdvertAttribute associated with each ad
+// AdvertAttribute is the attribute associated with an ad
 type AdvertAttribute struct {
     KeySlug                 string              `json:"key_slug"`
     KeyName                 string              `json:"key_name"`
@@ -71,7 +71,7 @@ type AdvertAttribute struct {
     ValueName               *string             `json:"value_name"`
 }
 
-// AdvertPicture associated with each ad
+// AdvertPicture is the picture associated with an ad
 type AdvertPicture struct {
     Thumbnail               *string             `json:"thumbnail_url"`
     Normal                  *string             `json:"normal_url"`
@@ -80,6 +80,7 @@ type AdvertPicture struct {
     Extra2XLarge            *string             `json:"extra_2x_large_url"`
 }
 
+// AdvertTimestamp is the timestamp associated with an ad
 type AdvertTimestamp struct {
     CreationTime            *time.Time          `json:"creation_time"`
     ModificationTime        *time.Time          `json:"modification_time"`
@@ -87,6 +88,7 @@ type AdvertTimestamp struct {
     EndTime                 *time.Time          `json:"end_time"`
 }
 
+// AdvertContact is the contact details of an ad
 type AdvertContact struct {
     Name                    *string             `json:"name"`
     Phone                   *string             `json:"phone"`
