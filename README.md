@@ -1,5 +1,7 @@
 # ebay-classifieds-api
 
+[![GoDoc](https://godoc.org/github.com/GreenVine/ebay-classifieds-api?status.svg)](https://godoc.org/github.com/GreenVine/ebay-classifieds-api)
+
 This is an unofficial SDK for eBay Classifieds (ECG) API written in Go. To use the API, you must have partner access.
 
 The module primarily consists of two components, ECG Agent and ECG Parser. The former sends the request to the API endpoint, whereas the latter parses the platform-dependent responses received from the endpoint. Currently, it implements APIs available in Australia but may also suitable for use in other countries.
