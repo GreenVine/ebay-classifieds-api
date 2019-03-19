@@ -1,8 +1,9 @@
-module github.com/GreenVine/ebay-ecg-api
+module github.com/GreenVine/ebay-classifieds-api
 
 require (
 	github.com/beevik/etree v1.1.0
 	github.com/clbanning/mxj v1.8.4
+	github.com/gomodule/redigo v2.0.0+incompatible // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/moul/http2curl v1.0.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.1 // indirect

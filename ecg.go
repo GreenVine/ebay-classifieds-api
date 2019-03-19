@@ -1,7 +1,7 @@
 package ecg
 
 import (
-    u "github.com/GreenVine/ebay-ecg-api/utils"
+    u "github.com/GreenVine/ebay-classifieds-api/utils"
     "github.com/beevik/etree"
     "github.com/parnurzeal/gorequest"
     "time"

@@ -2,8 +2,8 @@ package auparsers
 
 import (
     "fmt"
-    models "github.com/GreenVine/ebay-ecg-api/processors/au/models"
-    u "github.com/GreenVine/ebay-ecg-api/utils"
+    models "github.com/GreenVine/ebay-classifieds-api/processors/au/models"
+    u "github.com/GreenVine/ebay-classifieds-api/utils"
     "github.com/beevik/etree"
 )
 
