@@ -7,7 +7,10 @@ import (
     "time"
 )
 
-// Agent is ECG agent that stores configurable information
+// Agent initialises the ECG Agent and pass the API endpoint as base URL.
+// Optionally, you can pass either authentication or authorization or both settings to the agent.
+//
+// Read more about security settings implemented in the API here: https://api.ebay-kleinanzeigen.de/docs/pages/security.
 type Agent struct {
     Endpoint string
     ECGAuthorization *Authorization
@@ -41,7 +44,8 @@ func (agent Agent) hasECGAuthentication() bool {
     return agent.ECGAuthentication != nil
 }
 
-// RequestEndpoint will send request to ECG API endpoint
+// RequestEndpoint requests the API endpoint along with the URL and timeout (in milliseconds) settings
+// ECG Agent will either return a XML document on success, or an `EndpointErrorResponse` type on failure.
 func (agent Agent) RequestEndpoint(url string, timeout time.Duration) (*etree.Document, *EndpointErrorResponse) {
     http := gorequest.
         New().

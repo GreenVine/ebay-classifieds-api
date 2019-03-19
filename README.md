@@ -56,12 +56,12 @@ if err != nil { // erroneous HTTP response
    fmt.Println(*err.StatusCode, *err.Message)
 } else { // successful response
    advert, errs, isFatal := auparser.ParseAdvert(advertisement) // parse an Advertisement
-   cat, err, isFatal := auparser.ParseCategory(category) // parse Advertisements in a category
+   cat, errs, isFatal := auparser.ParseCategory(category) // parse Advertisements in a category
 
    fmt.Println(advert.Title) // get advertisement title
    fmt.Println(cat.Pagination.CurrentPage) // get current page number
    
-   jsonstr, _ := json.Marshal(doc)
-   fmt.Println(string(jsonstr)) // or optionally print the entire response as JSON
+   jsonstr, _ := json.Marshal(advert)
+   fmt.Println(string(jsonstr)) // or optionally print the entire advertisement response as JSON
 }
 ```
