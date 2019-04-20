@@ -71,6 +71,11 @@ func (agent Agent) RequestEndpoint(url string, timeout time.Duration) (*etree.Do
                 extractedMsg, _ := u.ExtractText(root, "//message")
                 errMsg          := u.ReplaceStringWithNil(&extractedMsg, "")
 
+                if errMsg == nil || *errMsg == "" { // replace with default error
+                    errMsgFallback := "Unknown error"
+                    errMsg = &errMsgFallback
+                }
+
                 return nil, &EndpointErrorResponse{
                     StatusCode: &statusCode,
                     Message:    errMsg,
