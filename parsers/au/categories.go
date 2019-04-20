@@ -13,20 +13,35 @@ func ParseCategories(doc *etree.Document) (*models.Categories, []error, bool) {
         return nil, []error{ fmt.Errorf("empty API response") }, true
     }
 
-    root := doc.Root()
-
-    if root == nil || root.Space != "cat" || root.Tag != "categories" {
-       return nil, []error{ fmt.Errorf("unexpected API response") }, true
-    }
-
     var errors []error
     var hasCriticalError = false
 
-    if rootCategory := root.SelectElement("category"); rootCategory != nil {
-        if categories := buildCategories(rootCategory, &errors, &hasCriticalError); !hasCriticalError && categories != nil {
-            return categories, errors, false
+    root := doc.Root()
+
+    if root == nil || root.Space != "cat" {
+       return nil, []error{ fmt.Errorf("unexpected API response") }, true
+    } else {
+        var rootCategory *etree.Element
+
+        switch root.Tag {
+        case "categories": { // contains multiple categories
+            rootCategory = root.SelectElement("category")
+        }
+        case "category": { // contains a single category
+            rootCategory = root
+        }
+        default:
+            return nil, []error{ fmt.Errorf("unexpected API category response") }, true
+        }
+
+        if rootCategory != nil {
+            if categories := buildCategories(rootCategory, &errors, &hasCriticalError); !hasCriticalError && categories != nil {
+                return categories, errors, false
+            }
         }
     }
+
+
 
     return nil, errors, true
 }
