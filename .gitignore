@@ -133,3 +133,6 @@ Temporary Items
 .apdisk
 
 # End of https://www.gitignore.io/api/go,macos,intellij+all
+
+### Project specific ###
+demos/

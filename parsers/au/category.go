@@ -9,6 +9,10 @@ import (
 
 // ParseCategory is to build a Category models from raw XML response
 func ParseCategory(doc *etree.Document) (*models.Category, []error, bool) {
+    if doc == nil {
+        return nil, []error{ fmt.Errorf("empty API response") }, true
+    }
+
     root := doc.Root()
 
     if root == nil || root.Space != "ad" || root.Tag != "ads" {

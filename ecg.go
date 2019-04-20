@@ -12,9 +12,9 @@ import (
 //
 // Read more about security settings implemented in the API here: https://api.ebay-kleinanzeigen.de/docs/pages/security.
 type Agent struct {
-    Endpoint string
-    ECGAuthorization *Authorization
-    ECGAuthentication *Authentication
+    Endpoint string // API Endpoint Base URL
+    ECGAuthorization *Authorization // HTTP Authorization Header
+    ECGAuthentication *Authentication // HTTP Authentication
 }
 
 // Authentication is ECG authentication settings
@@ -32,8 +32,8 @@ type Authorization struct {
 
 // EndpointErrorResponse is model of erroneous endpoint response
 type EndpointErrorResponse struct {
-    StatusCode  *uint   `json:"code"`
-    Message     *string `json:"message"`
+    StatusCode  *uint   `json:"code"` // HTTP Status Code
+    Message     *string `json:"message"` // Status Message (optional)
 }
 
 func (agent Agent) hasECGAuthorization() bool {
@@ -46,6 +46,8 @@ func (agent Agent) hasECGAuthentication() bool {
 
 // RequestEndpoint requests the API endpoint along with the URL and timeout (in milliseconds) settings
 // ECG Agent will either return a XML document on success, or an `EndpointErrorResponse` type on failure.
+//
+// A country-specific parser is required to parse the advertisement or category response
 func (agent Agent) RequestEndpoint(url string, timeout time.Duration) (*etree.Document, *EndpointErrorResponse) {
     http := gorequest.
         New().
@@ -68,6 +70,11 @@ func (agent Agent) RequestEndpoint(url string, timeout time.Duration) (*etree.Do
             if root := xml.Root(); statusCode != 200 || root == nil || root.Tag == "api-base-error" || root.Tag == "html" {
                 extractedMsg, _ := u.ExtractText(root, "//message")
                 errMsg          := u.ReplaceStringWithNil(&extractedMsg, "")
+
+                if errMsg == nil || *errMsg == "" { // replace with default error
+                    errMsgFallback := "Unknown error"
+                    errMsg = &errMsgFallback
+                }
 
                 return nil, &EndpointErrorResponse{
                     StatusCode: &statusCode,

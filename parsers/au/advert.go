@@ -11,6 +11,10 @@ import (
 
 // ParseAdvert is to build a Category models from raw XML response
 func ParseAdvert(doc *etree.Document) (*models.Advert, []error, bool) {
+    if doc == nil {
+        return nil, []error{ fmt.Errorf("empty API response") }, true
+    }
+
     root := doc.Root()
 
     if root == nil || root.Space != "ad" || root.Tag != "ad" {

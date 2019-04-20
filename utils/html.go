@@ -2,7 +2,7 @@ package utils
 
 import (
     "encoding/base64"
-    "jaytaylor.com/html2text"
+    "github.com/jaytaylor/html2text"
     "strings"
 )
 
