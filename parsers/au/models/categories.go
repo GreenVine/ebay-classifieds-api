@@ -8,6 +8,6 @@ type Categories struct {
     ParentID                *uint               `json:"parent_id"`
     ParentSlug              *string             `json:"parent_slug"`
     ChildrenCount           uint                `json:"children_count"`
-    Subcategories           []Categories        `json:"subcategories"`
+    Subcategories           []Categories        `json:"subcategories,omitempty"`
     IsRootCategory          bool                `json:"is_root"`
 }
