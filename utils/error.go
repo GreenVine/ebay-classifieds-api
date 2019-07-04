@@ -45,7 +45,8 @@ func ReplaceStringWithNil(str *string, match string) *string {
         return str
     }
 
-    return nil
+    var fallbackVal string
+    return &fallbackVal
 }
 
 // ReplaceUintWithNil replaces a matched unit with nil
@@ -54,6 +55,6 @@ func ReplaceUintWithNil(number *uint, match uint) *uint {
         return number
     }
 
-    var fallbackVal uint = 0
+    var fallbackVal uint
     return &fallbackVal
 }
