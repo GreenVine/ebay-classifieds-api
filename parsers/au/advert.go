@@ -180,19 +180,19 @@ func buildPosition(ad *etree.Element, errors *[]error, _ *bool) *models.AdvertPo
     if locs := ad.FindElements("./loc:locations/loc:location"); locs != nil {
         for i, loc := range locs {
             locID := u.FallbackUintWithReport(
-                u.ConvString2Uint(u.ExtractAttrByTag(loc, "id")))(
-                0, errors, fmt.Errorf("ads/ad/positions/locations[%d]/id", i))
+               u.ConvString2Uint(u.ExtractAttrByTag(loc, "id")))(
+               0, errors, fmt.Errorf("ads/ad/positions/locations[%d]/id", i))
 
             locName := u.FallbackStringWithReport(
-                u.ExtractText(loc, "./loc:localized-name"))(
-                "", errors, fmt.Errorf("ads/ad/positions/location[%d]/name", i))
+              u.ExtractText(loc, "./loc:localized-name"))(
+              "", errors, fmt.Errorf("ads/ad/positions/location[%d]/name", i))
 
             locParentID, _ := u.ConvString2Uint(u.ExtractText(loc, "./loc:parent-id"))
 
             locations = append(locations, models.AdvertLocation{
-                ID:         *u.ReplaceUintWithNil(&locID, 0),
-                Name:       *u.ReplaceStringWithNil(&locName, ""),
-                ParentID:   u.ReplaceUintWithNil(&locParentID, 0),
+               ID:         *u.ReplaceUintWithNil(&locID, 0),
+               Name:       *u.ReplaceStringWithNil(&locName, ""),
+               ParentID:   u.ReplaceUintWithNil(&locParentID, 0),
             })
         }
     }

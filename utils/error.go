@@ -54,5 +54,6 @@ func ReplaceUintWithNil(number *uint, match uint) *uint {
         return number
     }
 
-    return nil
+    var fallbackVal uint = 0
+    return &fallbackVal
 }
