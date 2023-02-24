@@ -14,5 +14,5 @@ require (
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a // indirect
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
-	golang.org/x/net v0.0.0-20190318221613-d196dffd7c2b // indirect
+	golang.org/x/net v0.7.0 // indirect
 )
